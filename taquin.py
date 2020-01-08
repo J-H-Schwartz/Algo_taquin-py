@@ -2,6 +2,7 @@ import random
 from terminaltables import AsciiTable
 import curses
 
+
 GAME_TITLE = "`•.,¸¸ [ JEU DU TAQUIN ] ¸¸,.•´"
 
 # Nombre de cases par côté
@@ -24,48 +25,68 @@ def get_available_movements():
     return []
 
 
-def move():
-    # TODO : appliquer le mouvement de la case vide
-    pass
+def move(direction, state):
+    # TODO :
+    # * récupérer les mouvements possibles pour l'état en cours
+    # * appliquer le mouvement si c'est permis
+    # * retourner l'état modifié
+    return state
 
 
-def has_won():
+def has_won(state):
     # TODO : vérifier si le jeu est gagné
     pass
 
 
-def handle_keypress(screen):
-    try:
-        key = screen.getkey().upper()
-    except:
-        return
+def get_random_state():
+    # TODO : certains états random ne sont pas solvables,
+    # il faut que cette fonction ne renvoie que des états solvables
+    cases = list(range(1, TAQUIN_SIZE ** 2)) + [EMPTY_CASE_VALUE]
+    random.shuffle(cases)
+    return [list(a) for a in zip(*[iter(cases)] * TAQUIN_SIZE)]
 
-    height, width = screen.getmaxyx()
-    screen.erase()
-    available_movements = get_available_movements()
+
+def echo(data, ui):
+    """
+    Utilitaire pour afficher une donnée à l'écran.
+    Peut être utilisée pour afficher des informations de debug
+
+    * data (str) : la donnée à afficher
+    * ui (curse Window) : la UI sur laquelle afficher l'info
+    """
+    x = 10 + TAQUIN_SIZE * 2
+    ui.addstr(x, 0, "%s  " % data)
+    ui.refresh()
+
+
+def handle_keypress(state, ui):
+    try:
+        key = ui.getkey().upper()
+    except Exception:
+        return state
+
+    height, width = ui.getmaxyx()
 
     if key == "KEY_DOWN":
-        screen.addstr(height - 1, 0, "↓ DOWN - A FAIRE", curses.A_REVERSE)
-        if "DOWN" in available_movements:
-            move("DOWN")
+        ui.addstr(height - 1, 0, "↓ DOWN - A FAIRE", curses.A_REVERSE)
+        state = move("DOWN", state)
 
     elif key == "KEY_UP":
-        screen.addstr(height - 1, 0, "↑ UP - A FAIRE", curses.A_REVERSE)
-        if "UP" in available_movements:
-            move("UP")
+        ui.addstr(height - 1, 0, "↑ UP - A FAIRE", curses.A_REVERSE)
+        state = move("UP", state)
 
     elif key == "KEY_LEFT":
-        screen.addstr(height - 1, 0, "← LEFT - A FAIRE", curses.A_REVERSE)
-        if "LEFT" in available_movements:
-            move("LEFT")
+        ui.addstr(height - 1, 0, "← LEFT - A FAIRE", curses.A_REVERSE)
+        state = move("LEFT", state)
 
     elif key == "KEY_RIGHT":
-        screen.addstr(height - 1, 0, "→ RIGHT - A FAIRE", curses.A_REVERSE)
-        if "RIGHT" in available_movements:
-            move("RIGHT")
+        ui.addstr(height - 1, 0, "→ RIGHT - A FAIRE", curses.A_REVERSE)
+        state = move("RIGHT", state)
 
     elif key in ("Q",):
         raise KeyboardInterrupt
+
+    return state
 
 
 def get_state_as_str(state):
@@ -77,43 +98,58 @@ def get_state_as_str(state):
     return table.table
 
 
-def display_output(screen, state):
+def display_output(state, ui):
     # Title
-    screen.addstr(0, 0, GAME_TITLE, curses.color_pair(1))
+    ui.addstr(0, 0, GAME_TITLE, curses.color_pair(1))
 
     # Table game
-    screen.addstr(2, 0, get_state_as_str(state), curses.color_pair(1))
+    ui.addstr(2, 0, get_state_as_str(state), curses.color_pair(1))
 
     # Controls
-    screen.addstr(4 + TAQUIN_SIZE * 2, 0, "Utiliser les flêches pour déplacer la case vide.")
-    screen.addstr(5 + TAQUIN_SIZE * 2, 0, "(r)eset | (s)olution | (q)uitter")
+    ui.addstr(4 + TAQUIN_SIZE * 2, 0, "Utiliser les flêches pour déplacer la case vide.")
+    ui.addstr(5 + TAQUIN_SIZE * 2, 0, "(r)eset | (s)olution | (c)ancel | (q)uitter")
+
+    if has_won(state):
+        ui.addstr(
+            7 + TAQUIN_SIZE * 2,
+            0,
+            "🎉 🎺 🎺  V O U S   A V E Z   G A G N É   ! !  🎺 🎺 🎉",
+            curses.color_pair(2) | curses.A_BLINK,
+        )
+    ui.refresh()
 
 
-def init_state():
-    cases = list(range(1, TAQUIN_SIZE ** 2)) + [EMPTY_CASE_VALUE]
-    random.shuffle(cases)
-    return [list(a) for a in zip(*[iter(cases)] * TAQUIN_SIZE)]
+def init_ui():
+    ui = curses.initscr()
+    curses.start_color()
+    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_GREEN)
+    curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_RED)
+    curses.noecho()
+    ui.keypad(True)
+    ui.nodelay(True)
+    return ui
+
+
+def clear_ui(ui):
+    curses.nocbreak()
+    ui.keypad(False)
+    curses.echo()
+    curses.endwin()
 
 
 def main():
-    global CURRENT_STATE
     """Fonction principale de l'application"""
     try:
         # Initalisation de l'UI
-        stdscr = curses.initscr()
-        curses.start_color()
-        curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_GREEN)
-        curses.noecho()
-        stdscr.keypad(True)
-        stdscr.nodelay(True)
+        ui = init_ui()
 
         # Récupération d'un taquin tiré aléatoirement
-        CURRENT_STATE = init_state()
+        state = get_random_state()
 
         while True:
             # Attend une action et affiche le résultat
-            handle_keypress(stdscr)
-            display_output(stdscr, CURRENT_STATE)
+            state = handle_keypress(state, ui)
+            display_output(state, ui)
 
             # Frequence de rafraichissement
             curses.napms(50)  # ms
@@ -121,10 +157,7 @@ def main():
         pass
     finally:
         # Lorsqu'on quite, on restaure l'environnement du terminal
-        curses.nocbreak()
-        stdscr.keypad(False)
-        curses.echo()
-        curses.endwin()
+        clear_ui(ui)
 
 
 if __name__ == "__main__":
