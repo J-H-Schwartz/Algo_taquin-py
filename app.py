@@ -5,7 +5,6 @@ from controler import get_random_puzzle
 def main():
     """Fonction principale de l'application"""
     try:
-
         # Récupération d'un taquin tiré aléatoirement
         puzzle = get_random_puzzle()
 

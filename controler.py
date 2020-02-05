@@ -1,16 +1,23 @@
-from models import *
+from models import has_won_models, get_correct_position_models, get_random_puzzle_models, empty_cell_location_models
+from settings import PUZZLE_SIZE
 
-
-def get_available_movements():
-    # TODO : retourner une liste de mouvements possibles ["LEFT", "UP"]
-    return []
+def get_available_movements(puzzle):
+    movements = ["LEFT", "RIGHT", "UP", "DOWN"]
+    empty_cell_x, empty_cell_y = empty_cell_location_models(puzzle)
+    if empty_cell_x == 0:
+        movements.remove("UP")
+    if empty_cell_x == (PUZZLE_SIZE -1):
+        movements.remove("DOWN")
+    if empty_cell_y == 0:
+        movements.remove("LEFT")
+    if empty_cell_y == (PUZZLE_SIZE - 1):
+        movements.remove("RIGHT")
+    return movements
 
 
 def move(direction, puzzle):
-    # TODO :
-    # * récupérer les mouvements possibles pour l'état en cours
-    # * appliquer le mouvement si c'est permis
-    # * retourner l'état modifié
+    get_available_movements(puzzle)
+    make_movement_models(direction, puzzle)
     return puzzle
 
 
@@ -22,3 +29,10 @@ def has_won(puzzle):
 def get_random_puzzle():
     puzzle = get_random_puzzle_models()
     return puzzle
+
+
+def get_correct_position():
+    solution = get_correct_position_models()
+    return solution
+
+
