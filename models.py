@@ -76,3 +76,32 @@ def empty_cell_location_models(puzzle):
         for y, cell in enumerate(row):
             if cell == EMPTY_CELL_VALUE:
                 return x, y
+
+def make_movements_models(direction, puzzle):
+    x, y = empty_cell_location_models(puzzle)
+
+    if direction == "LEFT":
+        y2 = y - 1
+        change = puzzle[x][y2]
+        puzzle[x][y2] = puzzle[x][y]
+        puzzle[x][y] = change
+
+    if direction == "RIGHT":
+        y2 = y + 1
+        change = puzzle[x][y2]
+        puzzle[x][y2] = puzzle[x][y]
+        puzzle[x][y] = change
+
+    if direction == "UP":
+        x2 = x - 1
+        change = puzzle[x2][y]
+        puzzle[x2][y] = puzzle[x][y]
+        puzzle[x][y] = change
+
+    if direction == "DOWN":
+        x2 = x + 1
+        change = puzzle[x2][y]
+        puzzle[x2][y] = puzzle[x][y]
+        puzzle[x][y] = change
+
+    return puzzle
