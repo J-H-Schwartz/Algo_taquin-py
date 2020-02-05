@@ -13,13 +13,11 @@ def has_won_models(puzzle):
 
 def get_random_puzzle_models():
     solvable = False
+    cells = list(range(1, PUZZLE_SIZE ** 2)) + [EMPTY_CELL_VALUE]
     while not solvable:
-        cells = list(range(1, PUZZLE_SIZE ** 2)) + [EMPTY_CELL_VALUE]
         shuffle(cells)
         puzzle = [list(a) for a in zip(*[iter(cells)] * PUZZLE_SIZE)]
         solvable = is_solvable_models(puzzle)
-        if not solvable:
-            print("plop")
     return puzzle
 
 
