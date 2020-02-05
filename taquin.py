@@ -16,10 +16,6 @@ EMPTY_CASE_VALUE = ""
 CORRECT_SOLUTION = [list(a) for a in zip(*[iter(list(range(1, TAQUIN_SIZE ** 2)) + [EMPTY_CASE_VALUE])] * TAQUIN_SIZE)]
 
 
-# Jeu en cours
-CURRENT_STATE = []
-
-
 def get_available_movements():
     # TODO : retourner une liste de mouvements possibles ["LEFT", "UP"]
     return []
