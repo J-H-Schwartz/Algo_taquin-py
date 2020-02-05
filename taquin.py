@@ -6,14 +6,14 @@ import curses
 GAME_TITLE = "`•.,¸¸ [ JEU DU TAQUIN ] ¸¸,.•´"
 
 # Nombre de cases par côté
-TAQUIN_SIZE = 4
+PUZZLE_SIZE = 4
 
 # Valeur de la case vide
 EMPTY_CASE_VALUE = ""
 
 
 # Taquin correct, dans l'ordre
-CORRECT_SOLUTION = [list(a) for a in zip(*[iter(list(range(1, TAQUIN_SIZE ** 2)) + [EMPTY_CASE_VALUE])] * TAQUIN_SIZE)]
+CORRECT_SOLUTION = [list(a) for a in zip(*[iter(list(range(1, PUZZLE_SIZE ** 2)) + [EMPTY_CELL_VALUE])] * PUZZLE_SIZE)]
 
 
 def get_available_movements():
@@ -37,9 +37,9 @@ def has_won(state):
 def get_random_state():
     # TODO : certains états random ne sont pas solvables,
     # il faut que cette fonction ne renvoie que des états solvables
-    cases = list(range(1, TAQUIN_SIZE ** 2)) + [EMPTY_CASE_VALUE]
+    cases = list(range(1, PUZZLE_SIZE ** 2)) + [EMPTY_CASE_VALUE]
     random.shuffle(cases)
-    return [list(a) for a in zip(*[iter(cases)] * TAQUIN_SIZE)]
+    return [list(a) for a in zip(*[iter(cases)] * PUZZLE_SIZE)]
 
 
 def echo(data, ui):
@@ -50,7 +50,7 @@ def echo(data, ui):
     * data (str) : la donnée à afficher
     * ui (curse Window) : la UI sur laquelle afficher l'info
     """
-    x = 10 + TAQUIN_SIZE * 2
+    x = 10 + PUZZLE_SIZE * 2
     ui.addstr(x, 0, "%s  " % data)
     ui.refresh()
 
@@ -102,12 +102,12 @@ def display_output(state, ui):
     ui.addstr(2, 0, get_state_as_str(state), curses.color_pair(1))
 
     # Controls
-    ui.addstr(4 + TAQUIN_SIZE * 2, 0, "Utiliser les flêches pour déplacer la case vide.")
-    ui.addstr(5 + TAQUIN_SIZE * 2, 0, "(r)eset | (s)olution | (c)ancel | (q)uitter")
+    ui.addstr(4 + PUZZLE_SIZE * 2, 0, "Utiliser les flêches pour déplacer la case vide.")
+    ui.addstr(5 + PUZZLE_SIZE * 2, 0, "(r)eset | (s)olution | (c)ancel | (q)uitter")
 
     if has_won(state):
         ui.addstr(
-            7 + TAQUIN_SIZE * 2,
+            7 + PUZZLE_SIZE * 2,
             0,
             "🎉 🎺 🎺  V O U S   A V E Z   G A G N É   ! !  🎺 🎺 🎉",
             curses.color_pair(2) | curses.A_BLINK,
@@ -136,16 +136,13 @@ def clear_ui(ui):
 def main():
     """Fonction principale de l'application"""
     try:
-        # Initalisation de l'UI
-        ui = init_ui()
-
         # Récupération d'un taquin tiré aléatoirement
         state = get_random_state()
 
         while True:
             # Attend une action et affiche le résultat
-            state = handle_keypress(state, ui)
-            display_output(state, ui)
+            state = handle_keypress(state)
+            display_output(state)
 
             # Frequence de rafraichissement
             curses.napms(50)  # ms
@@ -153,7 +150,7 @@ def main():
         pass
     finally:
         # Lorsqu'on quite, on restaure l'environnement du terminal
-        clear_ui(ui)
+        clear_ui()
 
 
 if __name__ == "__main__":
